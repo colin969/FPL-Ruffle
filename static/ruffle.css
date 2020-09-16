@@ -1,0 +1,18 @@
+body {
+  background-color: antiquewhite;
+}
+
+#heading {
+  text-align: center;
+  width: 100%;
+  margin: 1rem 0 1rem 0;
+}
+
+#container {
+  display: table;
+  margin: auto;
+  border-width: 0.5rem;
+  border-radius: 0.5rem;
+  border-color: #3F3F3F;
+  border-style: solid;
+}

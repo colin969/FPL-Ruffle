@@ -1,0 +1,23 @@
+<html>
+  <head>
+    <link rel='stylesheet' href='ruffle.css'/>
+    <script type='text/javascript' src='ruffle/ruffle.js'></script>
+    <script>
+      window.RufflePlayer = window.RufflePlayer || {};
+
+      window.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const data = urlParams.get('data');
+        let ruffle = window.RufflePlayer.newest();
+        let player = ruffle.create_player();
+        let container = document.getElementById('container');
+        container.appendChild(player);
+        player.stream_swf_url(data);
+      });
+    </script>
+  </head>
+  <body>
+    <h2 id='heading'>Ruffle Player</h2>
+    <div id='container'></div>
+  </body>
+</html>
