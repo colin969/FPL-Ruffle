@@ -10,7 +10,20 @@ type AssetFile = {
 }
 
 const flashPaths = [
-  'FPSoftware\\Flash\\flashplayer_32_sa.exe'
+  'FPSoftware\\Flash\\flashplayer_32_sa.exe',
+  'FPSoftware\\Flash\\6r21\\SAFlashPlayer.exe',
+  'FPSoftware\\Flash\\6r4\\SAFlashPlayer.exe',
+  'FPSoftware\\Flash\\7r14\\SAFlashPlayer.exe',
+  'FPSoftware\\Flash\\8r22\\SAFlashPlayer.exe',
+  'FPSoftware\\Flash\\9r16\\SAFlashPlayer.exe',
+  'FPSoftware\\Flash\\flashplayer11_9r900_152_win_sa_debug.exe',
+  'FPSoftware\\Flash\\flashplayer14_0r0_179_win_sa.exe',
+  'FPSoftware\\Flash\\flashplayer19_0r0_245_sa.exe',
+  'FPSoftware\\Flash\\flashplayer27_0r0_187_win_sa.exe',
+  'FPSoftware\\Flash\\flashplayer9r277_win_sa.exe',
+  'FPSoftware\\Flash\\flashplayer_10_3r183_90_win_sa.exe',
+  'FPSoftware\\Flash\\flashplayer_32_sa.exe',
+  'FPSoftware\\Flash\\flashplayer_7_sa.exe'
 ];
 
 export async function activate(context: flashpoint.ExtensionContext) {
