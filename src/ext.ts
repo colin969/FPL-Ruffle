@@ -2,13 +2,19 @@ import * as flashpoint from 'flashpoint-launcher';
 import * as fs from 'fs';
 import * as path from 'path';
 import axios from 'axios';
+import { fips } from 'crypto';
 
 type AssetFile = {
   name: string;
   url: string;
 }
 
-export function activate(context: flashpoint.ExtensionContext) {
+const flashPaths = [
+  'FPSoftware\\Flash\\flashplayer_32_sa.exe'
+];
+
+export async function activate(context: flashpoint.ExtensionContext) {
+  const config = await flashpoint.loadConfig();
   const registerSub = (d: flashpoint.Disposable) => { flashpoint.registerDisposable(context.subscriptions, d)};
   const ruffleWebDir = path.join(flashpoint.extensionPath, 'static', 'ruffle');
   const ruffleStandaloneDir = path.join(flashpoint.extensionPath, 'ruffle-standalone');
@@ -102,6 +108,37 @@ export function activate(context: flashpoint.ExtensionContext) {
       await fs.promises.unlink(tarPath);
     }
   };
+
+  if (!config['firstRunComplete']) {
+    const connectListener = flashpoint.onDidConnect(async () => {
+      const res = await flashpoint.dialogs.showMessageBox({
+        title: 'First Run Ruffle',
+        message: 'Looks like you haven\'t run the Ruffle extension before.\n' +
+          'Would you like to add app overrides from Flash to Ruffle Standalone or Web?',
+        buttons: ['Standalone', 'Web', 'None', 'Cancel'],
+        cancelId: 3
+      });
+      if (res <= 1) {
+        const override = res === 0 ? ':ruffle:' : ':ruffle-web:';
+        // Add app path overrides
+        const appPathOverrides = flashpoint.getPreferences().appPathOverrides;
+        for (const path of flashPaths) {
+          if (!appPathOverrides.find(o => o.path === path)) {
+            const newOverride: flashpoint.AppPathOverride = {
+              path,
+              override
+            };
+            appPathOverrides.push(newOverride);
+          }
+        }
+        flashpoint.overwritePreferenceData({ appPathOverrides });
+      }
+      config['firstRunComplete'] = true;
+      flashpoint.saveConfig(config);
+      flashpoint.dispose(connectListener);
+    });
+    flashpoint.registerDisposable(connectListener, context.subscriptions);
+  }
 
   // Download ruffle web if missing
   fs.promises.access(ruffleWebDir, fs.constants.F_OK)

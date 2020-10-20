@@ -2,3 +2,4 @@
 /node_modules
 /ruffle-standalone
 /static/ruffle
+config.json
