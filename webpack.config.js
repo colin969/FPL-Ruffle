@@ -16,7 +16,7 @@ const config = {
     libraryTarget: 'commonjs2',
     devtoolModuleFilenameTemplate: '../[resource-path]'
   },
-  devtool: 'source-map',
+  devtool: undefined,
   externals: {
     "flashpoint-launcher": "commonjs flashpoint-launcher",
   },

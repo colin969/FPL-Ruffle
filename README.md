@@ -16,7 +16,7 @@ Ruffle can also be updated manually via the 2 buttons on the Developer page. (Ti
 
 2) `npm install`
 
-3) `npm run build`
+3) `npm run build` (Use `npm run release` for production versions)
 
 4) Start Flashpoint Launcher
 

@@ -33,7 +33,8 @@
           ":ruffle:"
         ],
         "name": "Ruffle Standalone",
-        "path": "<extPath>/ruffle-standalone/release/ruffle"
+        "path": "<extPath>/ruffle-standalone/release/ruffle",
+        "arguments": ["--proxy=\"http://<proxy>/\""]
       }
     ]
   },
@@ -45,6 +46,7 @@
     "webpack-cli": "^3.3.12"
   },
   "scripts": {
+    "release": "webpack --mode production",
     "build": "webpack --mode development",
     "watch": "webpack --mode development --watch"
   },

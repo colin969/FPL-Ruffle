@@ -7,6 +7,7 @@ import { fips } from 'crypto';
 type AssetFile = {
   name: string;
   url: string;
+  publishedAt: string;
 }
 
 const flashPaths = [
@@ -76,7 +77,8 @@ export async function activate(context: flashpoint.ExtensionContext) {
     const assets: AssetFile[] = assetsJson.map((asset: any) => {
       return {
         name: asset['name'],
-        url: asset['browser_download_url']
+        url: asset['browser_download_url'],
+        publishedAt: latestRelease['published_at']
       }
     });
     for (const asset of assets) {
@@ -86,10 +88,9 @@ export async function activate(context: flashpoint.ExtensionContext) {
     }
   };
 
-  const downloadRuffleStandalone = async (logDev: (text: string) => void) => {
+  const downloadRuffleStandalone = async (assetFile: AssetFile, logDev: (text: string) => void) => {
     fs.rmdirSync(ruffleStandaloneDir, { recursive: true });
     await fs.promises.mkdir(ruffleStandaloneDir)
-    const assetFile = await getGithubAsset(getPlatformRegex(), logDev);
     const filePath = path.join(ruffleStandaloneDir, assetFile.name);
     logDev(`Found Asset \n  Name: ${assetFile.name}\n  Url: ${assetFile.url}`);
     await downloadFile(assetFile.url, filePath);
@@ -102,12 +103,13 @@ export async function activate(context: flashpoint.ExtensionContext) {
       await flashpoint.unzipFile(tarPath, ruffleStandaloneDir, { onData: dataPrintFactory(logDev) });
       await fs.promises.unlink(tarPath);
     }
+    config['standalone_version'] = assetFile.publishedAt;
+    flashpoint.saveConfig(config);
   };
 
-  const downloadRuffleWeb = async (logDev: (text: string) => void) => {
+  const downloadRuffleWeb = async (assetFile: AssetFile, logDev: (text: string) => void) => {
     fs.rmdirSync(ruffleWebDir, { recursive: true });
     await fs.promises.mkdir(ruffleWebDir)
-    const assetFile = await getGithubAsset(/.*selfhosted\.zip/, logDev);
     const filePath = path.join(ruffleWebDir, assetFile.name);
     logDev(`Found Asset \n  Name: ${assetFile.name}\n  Url: ${assetFile.url}`);
     await downloadFile(assetFile.url, filePath);
@@ -120,6 +122,8 @@ export async function activate(context: flashpoint.ExtensionContext) {
       await flashpoint.unzipFile(tarPath, ruffleWebDir, { onData: dataPrintFactory(logDev) });
       await fs.promises.unlink(tarPath);
     }
+    config['web_version'] = assetFile.publishedAt;
+    flashpoint.saveConfig(config);
   };
 
   if (!config['firstRunComplete']) {
@@ -153,24 +157,35 @@ export async function activate(context: flashpoint.ExtensionContext) {
     flashpoint.registerDisposable(connectListener, context.subscriptions);
   }
 
-  // Download ruffle web if missing
-  fs.promises.access(ruffleWebDir, fs.constants.F_OK)
-  .then(() => { /** Exists, skip downloading. */})
-  .catch((err) => {
-    downloadRuffleWeb(logDevFactory());
-  })
+  // Check for Standalone updates
+  const logVoid = () => {};
+  const standaloneAssetFile = await getGithubAsset(getPlatformRegex(), logVoid);
+  const standalonePublishedAt = Date.parse(standaloneAssetFile.publishedAt);
+  const rawLastStandaloneUpdate = config['standalone_version'];
+  const lastStandaloneUpdate = rawLastStandaloneUpdate ? Date.parse(rawLastStandaloneUpdate) : 0;
+  if (standalonePublishedAt > lastStandaloneUpdate) {
+    flashpoint.log.info(`Found Ruffle Standalone Update for ${standaloneAssetFile.publishedAt}, downloading...`);
+    downloadRuffleStandalone(standaloneAssetFile, logVoid);
+    flashpoint.log.info("Found Ruffle Standalone Update Downloaded!");
 
-   // Download ruffle standalone if missing
-   fs.promises.access(ruffleStandaloneDir, fs.constants.F_OK)
-   .then(() => { /** Exists, skip downloading. */})
-   .catch((err) => {
-     downloadRuffleStandalone(logDevFactory());
-   })
+  }  
+
+  // Check for Web updates
+  const webAssetFile = await getGithubAsset(/.*selfhosted\.zip/, logVoid);
+  const webPublishedAt = Date.parse(webAssetFile.publishedAt);
+  const rawLastWebUpdate = config['web_version'];
+  const lastWebUpdate = rawLastWebUpdate ? Date.parse(rawLastWebUpdate) : 0;
+  if (webPublishedAt > lastWebUpdate) {
+    flashpoint.log.info(`Found Ruffle Web Update for ${webAssetFile.publishedAt}, downloading...`);
+    downloadRuffleWeb(webAssetFile, logVoid);
+    flashpoint.log.info("Found Ruffle Web Update Downloaded!");
+  }
 
   registerSub(
-    flashpoint.commands.registerCommand('ruffle.download-ruffle-web', () => {
+    flashpoint.commands.registerCommand('ruffle.download-ruffle-web', async () => {
       const logDev = logDevFactory('Downloading Ruffle Web...')
-      downloadRuffleWeb(logDev)
+      const webAssetFile = await getGithubAsset(/.*selfhosted\.zip/, logDev);
+      downloadRuffleWeb(webAssetFile, logDev)
       .then(() => {
         logDev('Successfully downloaded Ruffle Web!');
       })
@@ -181,9 +196,10 @@ export async function activate(context: flashpoint.ExtensionContext) {
   );
 
   registerSub(
-    flashpoint.commands.registerCommand('ruffle.download-ruffle-standalone', () => {
+    flashpoint.commands.registerCommand('ruffle.download-ruffle-standalone', async () => {
       const logDev = logDevFactory('Downloading Ruffle Standalone...')
-      downloadRuffleStandalone(logDev)
+      const standaloneAssetFile = await getGithubAsset(getPlatformRegex(), logDev);
+      downloadRuffleStandalone(standaloneAssetFile, logDev)
       .then(() => {
         logDev('Successfully downloaded Ruffle Standalone!');
       })
