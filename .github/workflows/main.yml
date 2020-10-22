@@ -88,6 +88,7 @@ jobs:
         cp icon.png FPL-Ruffle/icon.png
         cp package.json FPL-Ruffle/package.json
         mv dist FPL-Ruffle/
+        mv static FPL-Ruffle/
         7z a release.zip FPL-Ruffle
 
     - name: Upload Extension Zip
