@@ -33,6 +33,10 @@ export async function activate(context: flashpoint.ExtensionContext) {
   const ruffleWebDir = path.join(flashpoint.extensionPath, 'static', 'ruffle');
   const ruffleStandaloneDir = path.join(flashpoint.extensionPath, 'ruffle-standalone');
 
+  flashpoint.games.onWillImportGame((curationState) => {
+    flashpoint.log.debug(`CurationState:\n${JSON.stringify(curationState, null, 2)}`);
+  });
+
   const downloadFile = async (url: string, filePath: string): Promise<void> => {
     const file = fs.createWriteStream(filePath);
     const res = await axios.get(url, {

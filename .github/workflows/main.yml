@@ -78,26 +78,18 @@ jobs:
       with:
         node-version: 14.x
     - run: npm install
-    - run: npm run release
     
-    - name: Package Release
+    - name: Build and Package Release
       run: |
-        mkdir FPL-Ruffle
-        cp README.md FPL-Ruffle/README.md
-        cp LICENSE.md FPL-Ruffle/LICENSE.md
-        cp icon.png FPL-Ruffle/icon.png
-        cp package.json FPL-Ruffle/package.json
-        mv dist FPL-Ruffle/
-        mv static FPL-Ruffle/
-        7z a release.zip FPL-Ruffle
+        npm run package
 
-    - name: Upload Extension Zip
+    - name: Release Extension Package
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ needs.create-release.outputs.upload_url }}
-        asset_path: ./release.zip
-        asset_name: fpl-ruffle-ext_nightly_${{ needs.create-release.outputs.date }}.zip
+        asset_path: ./extension.fplx
+        asset_name: fpl-ruffle-ext_nightly_${{ needs.create-release.outputs.date }}.fplx
         asset_content_type: application/zip
           

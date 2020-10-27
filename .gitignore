@@ -2,5 +2,6 @@
 /node_modules
 /ruffle-standalone
 /static/ruffle
-/staging
+/package
+extension.fplx
 config.json
