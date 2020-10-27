@@ -90,6 +90,6 @@ jobs:
       with:
         upload_url: ${{ needs.create-release.outputs.upload_url }}
         asset_path: ./extension.fplx
-        asset_name: fpl-ruffle-ext_nightly_${{ needs.create-release.outputs.date }}.fplx
+        asset_name: fpl-ruffle-ext_nightly_${{ needs.create-release.outputs.date }}.zip
         asset_content_type: application/zip
           
