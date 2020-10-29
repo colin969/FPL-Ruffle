@@ -8,6 +8,36 @@
   "icon": "icon.png",
   "main": "./dist/ext.js",
   "contributes": {
+    "configuration": [
+      {
+        "title": "Ruffle Standalone",
+        "properties": {
+          "com.ruffle.power-mode": {
+            "title": "Power Mode",
+            "type": "string",
+            "default": "High",
+            "enum": [
+              "High",
+              "Low"
+            ],
+            "description": "Power preference for the graphics device used. High power usage tends to prefer dedicated GPUs, whereas a low power usage tends prefer integrated GPUs."
+          },
+          "com.ruffle.graphics-mode": {
+            "title": "Graphics Mode",
+            "type": "string",
+            "description": "Type of graphics backend to use. Not all options may be supported by your current system. Default will attempt to pick the most supported graphics backend.",
+            "default": "default",
+            "enum": [
+              "Default",
+              "Vulkan",
+              "Metal",
+              "Dx12",
+              "Dx11"
+            ]
+          }
+        }
+      }
+    ],
     "devScripts": [
       {
         "name": "Update Ruffle Web",
@@ -35,7 +65,9 @@
         "name": "Ruffle Standalone",
         "path": "<extPath>/ruffle-standalone/release/ruffle",
         "arguments": [
-          "--proxy=\"http://<proxy>/\""
+          "--proxy=\"http://<proxy>/\"",
+          "--power=<extConf:com.ruffle.power-mode>",
+          "--graphics=<extConf:com.ruffle.graphics-mode>"
         ]
       }
     ]

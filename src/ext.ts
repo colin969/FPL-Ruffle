@@ -28,7 +28,6 @@ const flashPaths = [
 ];
 
 export async function activate(context: flashpoint.ExtensionContext) {
-  const config = await flashpoint.loadConfig();
   const registerSub = (d: flashpoint.Disposable) => { flashpoint.registerDisposable(context.subscriptions, d)};
   const ruffleWebDir = path.join(flashpoint.extensionPath, 'static', 'ruffle');
   const ruffleStandaloneDir = path.join(flashpoint.extensionPath, 'ruffle-standalone');
@@ -103,8 +102,7 @@ export async function activate(context: flashpoint.ExtensionContext) {
       await flashpoint.unzipFile(tarPath, ruffleStandaloneDir, { onData: dataPrintFactory(logDev) });
       await fs.promises.unlink(tarPath);
     }
-    config['standalone_version'] = assetFile.publishedAt;
-    flashpoint.saveConfig(config);
+    flashpoint.setExtConfigValue('com.ruffle.standalone_version', assetFile.publishedAt);
   };
 
   const downloadRuffleWeb = async (assetFile: AssetFile, logDev: (text: string) => void) => {
@@ -122,11 +120,10 @@ export async function activate(context: flashpoint.ExtensionContext) {
       await flashpoint.unzipFile(tarPath, ruffleWebDir, { onData: dataPrintFactory(logDev) });
       await fs.promises.unlink(tarPath);
     }
-    config['web_version'] = assetFile.publishedAt;
-    flashpoint.saveConfig(config);
+    flashpoint.setExtConfigValue('com.ruffle.web_version', assetFile.publishedAt);
   };
 
-  if (!config['firstRunComplete']) {
+  if (!flashpoint.getExtConfigValue('com.ruffle.first_run_complete')) {
     const connectListener = flashpoint.onDidConnect(async () => {
       const res = await flashpoint.dialogs.showMessageBox({
         title: 'First Run Ruffle',
@@ -150,8 +147,7 @@ export async function activate(context: flashpoint.ExtensionContext) {
         }
         flashpoint.overwritePreferenceData({ appPathOverrides });
       }
-      config['firstRunComplete'] = true;
-      flashpoint.saveConfig(config);
+      flashpoint.setExtConfigValue('com.ruffle.first_run_complete', true);
       flashpoint.dispose(connectListener);
     });
     flashpoint.registerDisposable(connectListener, context.subscriptions);
@@ -161,7 +157,7 @@ export async function activate(context: flashpoint.ExtensionContext) {
   const logVoid = () => {};
   const standaloneAssetFile = await getGithubAsset(getPlatformRegex(), logVoid);
   const standalonePublishedAt = Date.parse(standaloneAssetFile.publishedAt);
-  const rawLastStandaloneUpdate = config['standalone_version'];
+  const rawLastStandaloneUpdate = flashpoint.getExtConfigValue('com.ruffle.standalone_version');
   const lastStandaloneUpdate = rawLastStandaloneUpdate ? Date.parse(rawLastStandaloneUpdate) : 0;
   if (standalonePublishedAt > lastStandaloneUpdate) {
     flashpoint.log.info(`Found Ruffle Standalone Update for ${standaloneAssetFile.publishedAt}, downloading...`);
@@ -173,7 +169,7 @@ export async function activate(context: flashpoint.ExtensionContext) {
   // Check for Web updates
   const webAssetFile = await getGithubAsset(/.*selfhosted\.zip/, logVoid);
   const webPublishedAt = Date.parse(webAssetFile.publishedAt);
-  const rawLastWebUpdate = config['web_version'];
+  const rawLastWebUpdate = flashpoint.getExtConfigValue('com.ruffle.web_version');
   const lastWebUpdate = rawLastWebUpdate ? Date.parse(rawLastWebUpdate) : 0;
   if (webPublishedAt > lastWebUpdate) {
     flashpoint.log.info(`Found Ruffle Web Update for ${webAssetFile.publishedAt}, downloading...`);
