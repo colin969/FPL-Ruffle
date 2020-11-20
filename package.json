@@ -63,7 +63,7 @@
           ":ruffle:"
         ],
         "name": "Ruffle Standalone",
-        "path": "<extPath>/ruffle-standalone/release/ruffle",
+        "path": "<extPath>/ruffle-standalone/ruffle",
         "arguments": [
           "--proxy=\"http://<proxy>/\"",
           "--power=<extConf:com.ruffle.power-mode>",
