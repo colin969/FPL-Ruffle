@@ -2,7 +2,7 @@ import * as flashpoint from 'flashpoint-launcher';
 import * as fs from 'fs';
 import * as path from 'path';
 import axios from 'axios';
-import { fips } from 'crypto';
+import arch from 'arch';
 
 type AssetFile = {
   name: string;
@@ -88,7 +88,9 @@ export async function activate(context: flashpoint.ExtensionContext) {
   };
 
   const downloadRuffleStandalone = async (assetFile: AssetFile, logDev: (text: string) => void) => {
-    fs.rmdirSync(ruffleStandaloneDir, { recursive: true });
+    if (fs.existsSync(ruffleStandaloneDir)) {
+      fs.rmdirSync(ruffleStandaloneDir, { recursive: true });
+    }
     await fs.promises.mkdir(ruffleStandaloneDir)
     const filePath = path.join(ruffleStandaloneDir, assetFile.name);
     logDev(`Found Asset \n  Name: ${assetFile.name}\n  Url: ${assetFile.url}`);
@@ -106,7 +108,9 @@ export async function activate(context: flashpoint.ExtensionContext) {
   };
 
   const downloadRuffleWeb = async (assetFile: AssetFile, logDev: (text: string) => void) => {
-    fs.rmdirSync(ruffleWebDir, { recursive: true });
+    if (fs.existsSync(ruffleWebDir)) {
+      fs.rmdirSync(ruffleWebDir, { recursive: true });
+    }
     await fs.promises.mkdir(ruffleWebDir)
     const filePath = path.join(ruffleWebDir, assetFile.name);
     logDev(`Found Asset \n  Name: ${assetFile.name}\n  Url: ${assetFile.url}`);
@@ -222,11 +226,14 @@ function dataPrintFactory(logFunc: (val: string) => void) {
 function getPlatformRegex(): RegExp {
   switch (process.platform) {
     case 'win32':
-      return /.*windows\.zip/;
+      switch (arch()) {
+        case 'x64': return /.*windows-x86_64\.zip/;
+        case 'x86': return /.*windows-x86_32\.zip/;
+      }
     case 'linux':
-      return /.*linux\.tar\.gz/;
+      return /.*linux-x86_64\.tar\.gz/;
     case 'darwin':
-      return /.*osx\.tar\.gz/;
+      return /.*macos-universal\.tar\.gz/;
     default:
       throw new Error('Operating System not supported by Ruffle.');
   }
