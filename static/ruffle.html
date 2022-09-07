@@ -6,13 +6,32 @@
       window.RufflePlayer = window.RufflePlayer || {};
 
       window.addEventListener('DOMContentLoaded', () => {
+        const container = document.getElementById('container');
         const urlParams = new URLSearchParams(window.location.search);
-        const data = urlParams.get('data');
-        let ruffle = window.RufflePlayer.newest();
-        let player = ruffle.create_player();
-        let container = document.getElementById('container');
-        container.appendChild(player);
-        player.stream_swf_url(data);
+        const launchUrl = urlParams.get('data');
+        const launchPath = (new URL(launchUrl)).pathname;
+        let baseTag = document.createElement('base');
+        baseTag.setAttribute('href', launchUrl);
+        document.head.appendChild(baseTag);
+        if (launchPath.endsWith('.swf')) {
+          let ruffle = window.RufflePlayer.newest();
+          let player = ruffle.createPlayer();
+          player.config = {"letterbox": "on"};
+          container.appendChild(player);
+          player.load(launchUrl);
+          player.addEventListener('loadedmetadata', () => {
+            player.style.width  = Math.max(640, player.metadata.width) + 'px';
+            player.style.height = Math.max(480, player.metadata.height) + 'px';
+          });
+        } else {
+          fetch(launchUrl).then(function(response) {
+            return response.text();
+          }).then(function (responseText) {
+            container.innerHTML = responseText;
+          }).catch(function (err) {
+            container.innerHTML = err;
+          });
+        }
       });
     </script>
   </head>
