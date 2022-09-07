@@ -15,10 +15,10 @@
           "com.ruffle.power-mode": {
             "title": "Power Mode",
             "type": "string",
-            "default": "High",
+            "default": "high",
             "enum": [
-              "High",
-              "Low"
+              "high",
+              "low"
             ],
             "description": "Power preference for the graphics device used. High power usage tends to prefer dedicated GPUs, whereas a low power usage tends prefer integrated GPUs."
           },
@@ -28,11 +28,11 @@
             "description": "Type of graphics backend to use. Not all options may be supported by your current system. Default will attempt to pick the most supported graphics backend.",
             "default": "default",
             "enum": [
-              "Default",
-              "Vulkan",
-              "Metal",
-              "Dx12",
-              "Dx11"
+              "default",
+              "vulkan",
+              "metal",
+              "dx12",
+              "dx11"
             ]
           }
         }
@@ -88,6 +88,7 @@
     "watch": "webpack --mode development --watch"
   },
   "dependencies": {
+    "arch": "^2.2.0",
     "axios": "^0.20.0"
   }
 }
